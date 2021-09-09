@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera</title>
+    <link rel="icon" href="icon196.png">
+    <style>
+        #video-control {
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+        }
+
+        .controls {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .controls button {
+            padding: 0 0 0 0.4em;
+            margin: 0;
+            background: none;
+            border: none;
+            font-size: 40pt;
+            color: #fc0;
+            text-shadow: 0 0 40px black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <video id="video" autoplay></video>
+        <div class="controls">
+            <button onclick="onSnap()" title="Сделать снимок">📷</button>
+        </div>
+    </div>
+    <div class="container" style="display: none">
+        <canvas id="canvas"></canvas>
+        <div class="controls">
+            <button onclick="onBack()" title="Вернуться к видео">◀</button>
+            <button onclick="onSave()" title="Загрузить изображение и вернуться к видео">💾</button>
+            <button onclick="onSaveToFlower()" title="Загрузить изображение в папку цветов">⚘</button>
+        </div>
+    </div>
+    <div style="display: none">
+        <a href="" id="link"></a>
+    </div>
+</body>
+
+<script>
+    Number.prototype.NN = function () { return (this < 10 ? '0' : '') + this }
+
+    Date.prototype.date = function () {//в формат YYYY-MM-DD
+        return this.getFullYear() + '-' + (this.getMonth() + 1).NN() + '-' + this.getDate().NN()
+    }
+
+    const cameraWidth = 1280
+    const cameraHeight = 720
+
+    let video = document.getElementById('video');
+    let canvas = document.getElementById('canvas');
+
+    video.setAttribute('width', cameraWidth)
+    video.setAttribute('height', cameraHeight)
+    canvas.setAttribute('width', cameraWidth)
+    canvas.setAttribute('height', cameraHeight)
+
+    navigator.mediaDevices.getUserMedia({// Получаем доступ к камере с требуемыми размерами изображения
+        video: {
+            width: cameraWidth,
+            height: cameraHeight
+        }
+    }).then(function (stream) {
+        video.srcObject = stream;
+        video.play();
+    });
+
+    function setVisibility(el, visibility) {
+        el.parentElement.setAttribute('style', 'display:' + (visibility ? 'block' : 'none'))
+    }
+
+    function onSnap() {
+        canvas.getContext('2d').drawImage(video, 0, 0, cameraWidth, cameraHeight);
+        setVisibility(video, false)
+        setVisibility(canvas, true)
+    }
+
+    function onBack() {
+        setVisibility(canvas, false)
+        setVisibility(video, true)
+    }
+
+    function onSave() {
+        var link = document.getElementById('link');
+        link.setAttribute('download', 'MintyPaper.png');
+        link.setAttribute('href', canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+        link.click()
+        onBack()
+    }
+
+    function onSaveToFlower() {
+        var link = document.getElementById('link');
+        // link.setAttribute('download', (new Date()).date() + '.jpg');
+        // link.setAttribute('href', canvas.toDataURL('image/jpg').replace('image/jpg', 'image/octet-stream'));
+        link.setAttribute('download', (new Date()).date() + '.png');
+        link.setAttribute('href', canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream'));
+        link.click()
+        onBack()
+    }
+</script>
+
+</html>
